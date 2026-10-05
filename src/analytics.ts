@@ -7,12 +7,11 @@ declare global {
 }
 
 const queuedEvents: AnalyticsEvent[] = []
-// Create a website in Umami for this app and paste its ID here; analytics stays off while it is empty.
-const UMAMI_WEBSITE_ID = ''
+const UMAMI_WEBSITE_ID = '328e3242-d066-497a-b81c-8cc222dd22ba'
 const UMAMI_DOMAIN = 'gruz0.github.io'
 
 function isEnabled() {
-  return import.meta.env.PROD && UMAMI_WEBSITE_ID !== '' && window.location.hostname === UMAMI_DOMAIN
+  return import.meta.env.PROD && window.location.hostname === UMAMI_DOMAIN
 }
 
 export function trackEvent(event: AnalyticsEvent) {

@@ -22,10 +22,12 @@ Append `?template=family-2children` (or another template ID from `src/lib/budget
 | --- | --- |
 | `src/lib/budget-calculator.ts` | Types, 2026 assumptions, starting-point templates, and the calculation itself |
 | `src/lib/initial-budget-data.ts` | The budget a blank planner starts from |
+| `src/lib/budget-storage.ts` | Saving and restoring the budget in the browser's local storage |
 | `src/lib/print-report.ts` | The printable report, rendered to a standalone HTML string |
 | `src/components` | Form sections and result widgets |
 | `src/components/ui` | Vendored shadcn/ui primitives, trimmed to what the planner uses |
-| `src/analytics.ts` | Optional Umami loader and the fixed event list |
+| `src/analytics.ts` | Umami loader and the fixed event list |
+| `src/theme.ts` | Light, dark and system theme handling |
 
 ## Project scripts
 
@@ -60,14 +62,15 @@ Release Please uses Conventional Commit prefixes to determine the next version: 
 ## Product and privacy conventions
 
 - Keep every calculation in the browser. A change should not require secrets or a server.
-- Never send entered figures anywhere, including as analytics event properties.
+- Never send entered figures anywhere, including as analytics event properties. Saving them in the visitor's own browser storage is fine.
+- When `BudgetData` changes shape incompatibly, bump the storage key version in `src/lib/budget-storage.ts`.
 - When a fee or price changes, update the constant in `src/lib/budget-calculator.ts` and its entry under **Key Assumptions & Sources** together, with the source.
 - Keep defaults overridable, and present them as estimates rather than quotes.
 - Do not claim affiliation with DEWA, the Dubai Land Department, or any other provider or authority.
 
 ## Analytics
 
-Umami is disabled while `UMAMI_WEBSITE_ID` in `src/analytics.ts` is empty. Once an ID is set, it loads only on the production site at `gruz0.github.io`; development and local preview builds do not send events. The only custom events are `budget_calculated` and `pdf_download_clicked`, sent without properties.
+Umami loads only on the production site at `gruz0.github.io`, using the configured website ID in `src/analytics.ts`. Development and local preview builds do not send events. The only custom events are `budget_calculated` and `pdf_download_clicked`, sent without properties.
 
 ## Regenerating showcase images
 

@@ -29,7 +29,8 @@ It answers two questions:
 - Refundable deposits summary and move-out reminders dated from the lease start
 - Four starting points (solo professional, couple, family of four, young family) that can be linked directly with `?template=<id>`
 - Printable report that saves as a PDF from the browser's print dialog
-- AED or USD display, light and dark themes, and a mobile layout
+- Your budget is kept in the browser between visits, with **Start Over** to clear it
+- AED or USD display, a light, dark or system theme, and a mobile layout
 
 ### When does the money actually leave the account?
 
@@ -43,7 +44,9 @@ It answers two questions:
 
 Everything is calculated in the browser. The planner has no backend, no account and no database, and the figures you enter are never sent anywhere. The PDF report is generated locally too.
 
-Analytics are off unless an Umami website ID is configured in `src/analytics.ts`. When configured, cookie-free Umami records page visits and two fixed actions on the production host. Those events carry no budget figures.
+So that a reload does not wipe your work, the budget is saved in your browser's local storage on your own device. **Start Over** deletes it.
+
+The app uses cookie-free Umami analytics on its production host for page visits and two fixed actions. These events carry no budget figures.
 
 ## Assumptions
 

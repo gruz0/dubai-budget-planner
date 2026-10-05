@@ -4,6 +4,7 @@ import {
   type BudgetData,
   calculateBudget,
   calculateFoodSuggestion,
+  defaultRentStartDate,
   getPublicTransportCost,
 } from './budget-calculator'
 import { initialBudgetData } from './initial-budget-data'
@@ -100,10 +101,37 @@ describe('calculateBudget', () => {
     expect(monthly.youPay).toBe(monthly.total - 3334)
   })
 
+  it('caps percentages at 100 and sponsor cheques at the cheque count', () => {
+    const { upfront, monthly } = calculateBudget(
+      budget({
+        broker: { type: 'percentage', percentage: 250, fixedAmount: 0 },
+        rent: { ...initialBudgetData.rent, securityDeposit: { type: 'percentage', value: 400 } },
+        sponsorship: { enabled: true, rentChequesFromSponsor: 9, dewaDeposit: { type: 'percentage', value: 300 } },
+      }),
+    )
+
+    expect(upfront.brokerFee).toBe(80000)
+    expect(upfront.securityDeposit).toBe(80000)
+    expect(monthly.sponsorPay).toBe(monthly.rent)
+    expect(monthly.youPay).toBe(monthly.total - monthly.rent)
+    expect(upfront.sponsorPay).toBe(20000 + 2000)
+  })
+
   it('reports a zero savings rate when there is no income', () => {
     const { savings } = calculateBudget(budget({ income: { monthlyAmount: 0, currency: 'AED', exchangeRate: 3.67 } }))
 
     expect(savings.savingsRate).toBe(0)
+  })
+})
+
+describe('defaultRentStartDate', () => {
+  it('is the first day of the following month', () => {
+    expect(defaultRentStartDate(new Date(2026, 9, 5))).toBe('2026-11-01')
+    expect(defaultRentStartDate(new Date(2026, 0, 31))).toBe('2026-02-01')
+  })
+
+  it('rolls over into the next year', () => {
+    expect(defaultRentStartDate(new Date(2026, 11, 15))).toBe('2027-01-01')
   })
 })
 

@@ -11,9 +11,8 @@ export function AdPlacementSection() {
               Get Your Business Featured
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              This online calculator helps hundreds of people plan their move to Dubai every day. Your business could be
-              featured right here, reaching potential customers at the perfect moment when they&apos;re planning their
-              move.
+              People use this calculator while they plan their move to Dubai. Your business could be featured right
+              here, at the moment they are budgeting for it.
             </p>
           </div>
 

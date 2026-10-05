@@ -1,4 +1,5 @@
 import { Baby, Heart, type LucideIcon, User, Users } from 'lucide-react'
+import { clamp } from './utils'
 
 // Types for budget calculation
 export interface IncomeData {
@@ -267,6 +268,12 @@ const ASSUMPTIONS = {
 }
 
 // Predefined budget templates for common scenarios
+// Leases usually start on the first of a month, so default to the first day of the next one
+export function defaultRentStartDate(now: Date = new Date()): string {
+  const start = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  return `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-01`
+}
+
 export interface BudgetTemplate {
   id: string
   name: string
@@ -289,7 +296,7 @@ export const BUDGET_TEMPLATES: BudgetTemplate[] = [
       },
       rent: {
         annualRent: 60000,
-        rentStartDate: '2026-01-01',
+        rentStartDate: defaultRentStartDate(),
         numberOfCheques: 4,
         securityDeposit: {
           type: 'percentage',
@@ -415,7 +422,7 @@ export const BUDGET_TEMPLATES: BudgetTemplate[] = [
       },
       rent: {
         annualRent: 85000,
-        rentStartDate: '2026-01-01',
+        rentStartDate: defaultRentStartDate(),
         numberOfCheques: 4,
         securityDeposit: {
           type: 'percentage',
@@ -593,7 +600,7 @@ export const BUDGET_TEMPLATES: BudgetTemplate[] = [
       },
       rent: {
         annualRent: 120000,
-        rentStartDate: '2026-01-01',
+        rentStartDate: defaultRentStartDate(),
         numberOfCheques: 4,
         securityDeposit: {
           type: 'percentage',
@@ -797,7 +804,7 @@ export const BUDGET_TEMPLATES: BudgetTemplate[] = [
       },
       rent: {
         annualRent: 95000,
-        rentStartDate: '2026-01-01',
+        rentStartDate: defaultRentStartDate(),
         numberOfCheques: 4,
         securityDeposit: {
           type: 'percentage',
@@ -985,10 +992,10 @@ function applySplitRule(amount: number, rule: SplitRule | undefined): { youPay: 
 
   let sponsorPay = 0
   if (rule.type === 'percentage') {
-    sponsorPay = Math.round((amount * rule.value) / 100)
+    sponsorPay = Math.round((amount * clamp(rule.value, 0, 100)) / 100)
   } else {
     // fixed amount
-    sponsorPay = Math.min(rule.value, amount) // can't pay more than total
+    sponsorPay = clamp(rule.value, 0, amount) // can't pay more than total
   }
 
   const youPay = amount - sponsorPay
@@ -1006,7 +1013,9 @@ export function calculateBudget(data: BudgetData): BudgetResults {
   // Calculate upfront costs
   const rentFirstCheque = Math.round(data.rent.annualRent / data.rent.numberOfCheques)
   const brokerFee = Math.round(
-    data.broker.type === 'percentage' ? data.rent.annualRent * (data.broker.percentage / 100) : data.broker.fixedAmount,
+    data.broker.type === 'percentage'
+      ? data.rent.annualRent * (clamp(data.broker.percentage, 0, 100) / 100)
+      : data.broker.fixedAmount,
   )
   const dewaDeposit = data.utilities.dewa.enabled ? Math.round(data.utilities.dewa.deposit) : 0
   const coolingDeposit = data.utilities.districtCooling.enabled ? Math.round(data.utilities.districtCooling.deposit) : 0
@@ -1014,7 +1023,7 @@ export function calculateBudget(data: BudgetData): BudgetResults {
   const ejari = Math.round(ASSUMPTIONS.ejari[data.rent.ejari.type])
   const securityDeposit = Math.round(
     data.rent.securityDeposit.type === 'percentage'
-      ? data.rent.annualRent * (data.rent.securityDeposit.value / 100)
+      ? data.rent.annualRent * (clamp(data.rent.securityDeposit.value, 0, 100) / 100)
       : data.rent.securityDeposit.value,
   )
   const appliances = Math.round(data.appliances.totalAmount)
@@ -1060,7 +1069,9 @@ export function calculateBudget(data: BudgetData): BudgetResults {
     : { youPay: relocationServices, sponsorPay: 0 }
 
   // Handle rent cheques sponsorship
-  const chequesFromSponsor = sponsorshipEnabled ? data.sponsorship?.rentChequesFromSponsor || 0 : 0
+  const chequesFromSponsor = sponsorshipEnabled
+    ? clamp(data.sponsorship?.rentChequesFromSponsor || 0, 0, data.rent.numberOfCheques)
+    : 0
   const firstPaymentSplit = {
     youPay: chequesFromSponsor > 0 ? 0 : rentFirstCheque,
     sponsorPay: chequesFromSponsor > 0 ? rentFirstCheque : 0,

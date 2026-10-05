@@ -1,5 +1,6 @@
 import type { BrokerData, SponsorshipConfig } from '../lib/budget-calculator'
 import { formatNumber } from '../lib/format'
+import { clamp } from '../lib/utils'
 import { SplitButton } from './split-button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -37,9 +38,9 @@ export function BrokerSection({ data, annualRent, onChange, sponsorship, onSpons
                     type="number"
                     step="0.1"
                     min="0"
-                    max="10"
+                    max="100"
                     value={data.percentage || ''}
-                    onChange={(e) => onChange({ percentage: Number(e.target.value) })}
+                    onChange={(e) => onChange({ percentage: clamp(Number(e.target.value), 0, 100) })}
                     className="w-24"
                   />
                   <span className="text-muted-foreground text-sm">%</span>

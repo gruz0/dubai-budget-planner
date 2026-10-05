@@ -2,6 +2,7 @@ import { Split, X } from 'lucide-react'
 import { useState } from 'react'
 import type { SplitRule } from '../lib/budget-calculator'
 import { formatNumber } from '../lib/format'
+import { clamp } from '../lib/utils'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -158,7 +159,7 @@ export function SplitButton({ amount, currentRule, onChange, label = 'expense', 
                   <Input
                     type="number"
                     value={splitValue}
-                    onChange={(e) => setSplitValue(Math.max(0, Number(e.target.value)))}
+                    onChange={(e) => setSplitValue(clamp(Number(e.target.value), 0, amount))}
                     min={0}
                     max={amount}
                   />

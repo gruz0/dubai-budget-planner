@@ -1,5 +1,5 @@
 import { Settings2 } from 'lucide-react'
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { PreferencesSection } from './preferences-section'
 import { Button } from './ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
@@ -19,9 +19,10 @@ interface PreferencesData {
 interface PreferencesDialogProps {
   data: PreferencesData
   onChange: (data: Partial<PreferencesData>) => void
+  themeToggle: ReactNode
 }
 
-export function PreferencesDialog({ data, onChange }: PreferencesDialogProps) {
+export function PreferencesDialog({ data, onChange, themeToggle }: PreferencesDialogProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -39,7 +40,8 @@ export function PreferencesDialog({ data, onChange }: PreferencesDialogProps) {
             Preferences
           </DialogTitle>
         </DialogHeader>
-        <div className="max-h-[400px] overflow-y-auto">
+        <div className="max-h-[400px] space-y-4 overflow-y-auto md:space-y-6">
+          {themeToggle}
           <PreferencesSection data={data} onChange={onChange} />
         </div>
       </DialogContent>

@@ -8,13 +8,14 @@ import {
   type LucideIcon,
   Package,
   Plane,
+  RotateCcw,
   Smartphone,
   TrendingUp,
   Users,
   UtensilsCrossed,
   Zap,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { trackEvent } from '../analytics'
 import {
   BUDGET_TEMPLATES,
@@ -23,6 +24,7 @@ import {
   calculateBudget,
   type SponsorshipConfig,
 } from '../lib/budget-calculator'
+import { clearSavedBudget, loadSavedBudget, saveBudget } from '../lib/budget-storage'
 import { formatNumber } from '../lib/format'
 import { initialBudgetData } from '../lib/initial-budget-data'
 import { useToast } from '../lib/use-toast'
@@ -47,6 +49,7 @@ import { RentSection } from './rent-section'
 import { ReportBugButton } from './report-bug-button'
 import { TransportSection } from './transport-section'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion'
+import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import { UpfrontPaymentsWidget } from './upfront-payments-widget'
@@ -73,12 +76,32 @@ function SectionHeader({ icon: Icon, title, hint, iconColor = 'text-muted-foregr
 }
 
 // Default appliances with 2026 Dubai pricing and ranges
-export function BudgetPlannerForm() {
+function templateIdFromUrl() {
+  return new URLSearchParams(window.location.search).get('template')
+}
+
+export function BudgetPlannerForm({ themeToggle }: { themeToggle: ReactNode }) {
   const { toast } = useToast()
-  const [budgetData, setBudgetData] = useState<BudgetData>(initialBudgetData)
-  const [openSections, setOpenSections] = useState<string[]>(['income'])
-  const [hasUnlockedSections, setHasUnlockedSections] = useState(false)
-  const [showQuickStart, setShowQuickStart] = useState(true)
+  // A ?template= link starts from that template, not from the visitor's saved budget
+  const [saved] = useState(() => (templateIdFromUrl() ? null : loadSavedBudget()))
+  const [budgetData, setBudgetData] = useState<BudgetData>(saved?.budgetData ?? initialBudgetData)
+  const [openSections, setOpenSections] = useState<string[]>(saved?.openSections ?? ['income'])
+  const [hasUnlockedSections, setHasUnlockedSections] = useState(saved?.hasUnlockedSections ?? false)
+  const [showQuickStart, setShowQuickStart] = useState(!saved)
+
+  // Keep the budget across reloads; nothing is stored until the visitor leaves the starting screen
+  useEffect(() => {
+    if (showQuickStart) return
+    saveBudget({ budgetData, openSections, hasUnlockedSections })
+  }, [budgetData, openSections, hasUnlockedSections, showQuickStart])
+
+  function handleReset() {
+    clearSavedBudget()
+    setBudgetData(initialBudgetData)
+    setOpenSections(['income'])
+    setHasUnlockedSections(false)
+    setShowQuickStart(true)
+  }
 
   const results = useMemo(() => calculateBudget(budgetData), [budgetData])
 
@@ -153,7 +176,7 @@ export function BudgetPlannerForm() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs once on mount; applyTemplate is recreated every render
   useEffect(() => {
     if (templateApplied.current) return
-    const templateId = new URLSearchParams(window.location.search).get('template')
+    const templateId = templateIdFromUrl()
     if (!templateId) return
     const template = BUDGET_TEMPLATES.find((t) => t.id === templateId)
     if (!template) return
@@ -183,7 +206,15 @@ export function BudgetPlannerForm() {
             </>
           )}
           <QuickStartTemplatesDialog onTemplateSelect={applyTemplate} />
-          <PreferencesDialog data={budgetData.preferences} onChange={(data) => updateBudgetData('preferences', data)} />
+          <PreferencesDialog
+            data={budgetData.preferences}
+            onChange={(data) => updateBudgetData('preferences', data)}
+            themeToggle={themeToggle}
+          />
+          <Button variant="outline" className="flex cursor-pointer items-center gap-2" onClick={handleReset}>
+            <RotateCcw className="h-4 w-4" />
+            <span className="hidden md:block">Start Over</span>
+          </Button>
         </div>
       )}
 

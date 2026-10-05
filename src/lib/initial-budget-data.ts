@@ -1,4 +1,4 @@
-import type { ApplianceItem, BudgetData } from './budget-calculator'
+import { type ApplianceItem, type BudgetData, defaultRentStartDate } from './budget-calculator'
 
 const DEFAULT_APPLIANCES: ApplianceItem[] = [
   {
@@ -155,8 +155,7 @@ export const initialBudgetData: BudgetData = {
   },
   rent: {
     annualRent: 80000,
-    // TODO: Add default rent start date to the next month
-    rentStartDate: '2026-01-01',
+    rentStartDate: defaultRentStartDate(),
     numberOfCheques: 4,
     securityDeposit: {
       type: 'percentage',

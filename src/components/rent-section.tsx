@@ -1,6 +1,7 @@
 import { Info, Shield } from 'lucide-react'
 import type { RentData, SponsorshipConfig } from '../lib/budget-calculator'
 import { formatNumber } from '../lib/format'
+import { clamp } from '../lib/utils'
 import { SplitButton } from './split-button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -82,7 +83,7 @@ export function RentSection({ data, onChange, sponsorship, onSponsorshipChange }
                 max={data.numberOfCheques}
                 value={sponsorship?.rentChequesFromSponsor || 0}
                 onChange={(e) => {
-                  const value = Number(e.target.value)
+                  const value = clamp(Math.floor(Number(e.target.value)), 0, data.numberOfCheques)
                   onSponsorshipChange({
                     enabled: value > 0 || sponsorship?.enabled || false,
                     rentChequesFromSponsor: value,
@@ -136,13 +137,13 @@ export function RentSection({ data, onChange, sponsorship, onSponsorshipChange }
                         type="number"
                         step="0.1"
                         min="0"
-                        max="20"
+                        max="100"
                         value={data.securityDeposit.value || ''}
                         onChange={(e) =>
                           onChange({
                             securityDeposit: {
                               ...data.securityDeposit,
-                              value: Number(e.target.value),
+                              value: clamp(Number(e.target.value), 0, 100),
                             },
                           })
                         }
